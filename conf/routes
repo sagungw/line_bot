@@ -1,0 +1,13 @@
+# An example controller showing a sample home page
+GET     /                           controllers.HomeController.index
+
+POST    /create_user                controllers.ContributorController.createUser
+
+GET     /movies                     controllers.MovieController.fetchMovies
+
+GET     /actor_start                controllers.TestActorSchedulerController.startActor
+
+GET     /actor_stop                controllers.TestActorSchedulerController.stopActor
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
