@@ -1,0 +1,20 @@
+{
+  "name" : "21 Cineplex",
+  "url" : "http://www.21cineplex.com/",
+
+  "citiesEntryCssSelectors" : [ "li.mn4 > a" ],
+  "city_css_selector" : "select#sl_city option",
+  "city_select_form_selector" : "select#sl_city",
+
+  "theaters_entry_css_selectors" : [ "li.mn4 > a" ],
+  "theater_css_selector" : "//table[@class='table-theater']//tr[@data-city]",
+  "theater_name_css_selector" : "//div[@class='col-m_462']/div[@class='col-title']",
+
+  "movie_list_css_selector" : "//div[@id='makan'][1]",
+  "movie_row_css_selector" : "//div[@id='makan'][1]//tr[not(@class='title')]",
+
+  "movie_link_css_selector" : "img.thumb5",
+  "movie_show_time_css_selector" : "td[align=\"right\"] div",
+  "movie_name_css_selector" : "h2.titlebig",
+  "movie_synopsis_css_selector" : "div.col-m_392 div.grad div.col-content"
+}

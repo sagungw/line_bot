@@ -4,32 +4,32 @@ import com.google.inject.Inject;
 import models.Movie;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
-import scrapper.WebScrapper;
+import scrappers.WebDriver;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class MovieFetchingService {
 
-    private WebScrapper webScrapper;
+    private WebDriver webDriver;
 
     @Inject
-    public MovieFetchingService(WebScrapper webScrapper) {
-        this.webScrapper = webScrapper;
+    public MovieFetchingService(WebDriver webDriver) {
+        this.webDriver = webDriver;
     }
 
     public List<Movie> fetchNLatestMovies (int n) {
-        webScrapper.navigate().to("http://www.21cineplex.com/");
-        webScrapper.findElementByLinkText("NOW PLAYING").click();
+        webDriver.navigate().to("http://www.21cineplex.com/");
+        webDriver.findElementByLinkText("NOW PLAYING").click();
 
-        List<WebElement> moviesElements = webScrapper.findElementsByCssSelector("ul#mvlist > li");
+        List<WebElement> moviesElements = webDriver.findElementsByCssSelector("ul#mvlist > li");
         List<Movie> movies = moviesElements.stream().map(element -> {
             String title = element.findElement(By.cssSelector("h3 > a")).getText();
             String synopsis = element.findElement(By.cssSelector("p")).getText();
             return new Movie(title, synopsis);
         }).collect(Collectors.toList());
 
-        webScrapper.close();
+        webDriver.close();
         return movies;
     }
 
