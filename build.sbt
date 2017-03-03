@@ -19,3 +19,9 @@ libraryDependencies ++= Seq(
   "io.github.bonigarcia" % "webdrivermanager" % "1.6.0",
   "com.linecorp.bot" % "line-bot-servlet" % "1.6.0"
 )
+
+herokuAppName in Compile := "line-bot-jay"
+
+herokuProcessTypes in Compile := Map(
+  "web" -> "target/universal/stage/bin/line_bot -Dhttp.port=9000"
+)
