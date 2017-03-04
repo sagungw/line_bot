@@ -23,5 +23,5 @@ libraryDependencies ++= Seq(
 herokuAppName in Compile := "line-bot-jay"
 
 herokuProcessTypes in Compile := Map(
-  "web" -> "target/universal/stage/bin/line_bot -Dhttp.port=9000"
+  "web" -> "target/universal/stage/bin/line-bot -Dhttp.port=9000"
 )
