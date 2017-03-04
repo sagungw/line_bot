@@ -1,0 +1,1 @@
+web: target/universal/stage/bin/line-bot -Dhttp.port=9000
