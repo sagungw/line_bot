@@ -1,5 +1,6 @@
 package scrappers.xxi_cineplex;
 
+import com.google.inject.Inject;
 import models.Site;
 import models.SiteCity;
 import models.Theater;
@@ -15,17 +16,18 @@ import java.util.List;
 
 public class TheatersScrapper extends XXICineplexScrapper {
 
+    @Inject
     public TheatersScrapper(WebDriver webDriver, JPAApi jpaApi) {
-        this.webDriver = webDriver;
-        this.jpaApi = jpaApi;
+        super(webDriver, jpaApi);
     }
 
     public void scrap(Site site) {
+        webDriver.navigate().to(site.getUrl());
         site.getTheatersEntryCssSelectors().forEach(selector -> webDriver.findElement(By.cssSelector(selector)).click());
         Select citySelection = new Select(webDriver.findElement(By.cssSelector(site.getCitySelectFormSelector())));
 
-        List<SiteCity> siteCities =  jpaApi.withTransaction(entityManager -> {
-            Query query = entityManager.createNativeQuery("select * from site_city where site_id = " + site.getId());
+        List<SiteCity> siteCities = jpaApi.withTransaction(entityManager -> {
+            Query query = entityManager.createQuery("SELECT ");
             return query.getResultList();
         });
 

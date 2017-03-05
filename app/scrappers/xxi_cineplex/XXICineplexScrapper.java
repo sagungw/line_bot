@@ -10,4 +10,9 @@ public abstract class XXICineplexScrapper implements WebScrapper {
 
     JPAApi jpaApi;
 
+    public XXICineplexScrapper(WebDriver webDriver, JPAApi jpaApi) {
+        this.webDriver = webDriver;
+        this.jpaApi = jpaApi;
+    }
+
 }

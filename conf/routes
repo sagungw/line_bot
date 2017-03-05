@@ -3,6 +3,10 @@ GET     /api/ping                   controllers.Ping.ping
 
 POST    /api/webhook                controllers.Webhook.webhook
 
+POST    /scrap_city                 controllers.ScrappingController.scrapCity
+
+POST    /scrap_theater              controllers.ScrappingController.scrapTheater
+
 GET     /actor_start                controllers.ScrappingSchedulerController.startActor
 
 GET     /actor_stop                 controllers.ScrappingSchedulerController.stopActor

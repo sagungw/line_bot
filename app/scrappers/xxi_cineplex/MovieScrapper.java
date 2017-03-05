@@ -17,8 +17,7 @@ import java.util.List;
 public class MovieScrapper extends XXICineplexScrapper {
 
     public MovieScrapper(WebDriver webDriver, JPAApi jpaApi) {
-        this.webDriver = webDriver;
-        this.jpaApi = jpaApi;
+        super(webDriver, jpaApi);
     }
 
     public void scrap(Site site) {

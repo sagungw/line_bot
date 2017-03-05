@@ -32,13 +32,13 @@ public class ScrappingSchedulerController extends Controller {
     }
 
     public Result stopActor() {
-        actorSystem.stop(testActor);
-//        try {
-//            this.schedule.cancel();
-//        } catch(NullPointerException npe) {
-//
-//        }
-        return ok("Actor stopped");
+        try {
+            this.schedule.cancel();
+            return ok("Actor stopped");
+        } catch(NullPointerException npe) {
+            npe.printStackTrace();
+            return internalServerError();
+        }
     }
 
 }

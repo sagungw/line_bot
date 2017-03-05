@@ -2,7 +2,7 @@
   "name" : "21 Cineplex",
   "url" : "http://www.21cineplex.com/",
 
-  "citiesEntryCssSelectors" : [ "li.mn4 > a" ],
+  "cities_entry_css_selectors" : [ "li.mn4 > a" ],
   "city_css_selector" : "select#sl_city option",
   "city_select_form_selector" : "select#sl_city",
 

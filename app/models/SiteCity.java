@@ -23,6 +23,10 @@ public class SiteCity {
     private String displayName;
 
     public void setSite(Site site) {
+        Site oldSite = this.getSite();
+        if (oldSite != null && oldSite.equals(site))
+            return;
+
         this.primaryKeys.setSite(site);
     }
 
@@ -32,6 +36,10 @@ public class SiteCity {
     }
 
     public void setCity(City city) {
+        City oldCity = this.getCity();
+        if (oldCity != null && oldCity.equals(city))
+            return;
+
         this.primaryKeys.setCity(city);
     }
 
@@ -40,8 +48,18 @@ public class SiteCity {
         return this.primaryKeys.getCity();
     }
 
+    public SiteCity() {
+
+    }
+
     public SiteCity(String displayName) {
         this.displayName = displayName;
+    }
+
+    public SiteCity(String displayName, Site site, City city) {
+        this(displayName);
+        this.setSite(site);
+        this.setCity(city);
     }
 
 }

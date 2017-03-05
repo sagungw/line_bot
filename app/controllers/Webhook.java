@@ -10,7 +10,7 @@ public class Webhook extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result webhook(){
         JsonNode json = request().body().asJson();
-        return ok(json.toString());
+        return ok(json);
     }
 
 }

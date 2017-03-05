@@ -3,10 +3,9 @@ package models;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -18,12 +17,12 @@ public class Site {
     @Getter
     private Integer id;
 
-    @Column
+    @Column(unique = true)
     @Setter
     @Getter
     private String name;
 
-    @Column
+    @Column(unique = true)
     @Setter
     @Getter
     private String url;
@@ -108,12 +107,38 @@ public class Site {
     @JsonProperty("movies_scrapping_frequency_in_days")
     @Setter
     @Getter
-    private Integer moviesScrappingFrequencyInDays;
+    private Integer moviesScrappingFrequencyInDays = 0;
 
-    @OneToMany(mappedBy = "primaryKeys.site")
-    @Cascade(CascadeType.ALL)
+    @OneToMany(mappedBy = "primaryKeys.site", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @Setter
     @Getter
-    private List<SiteCity> siteCities;
+    private List<SiteCity> siteCities = new ArrayList<>();
 
+    public void addSiteCity(SiteCity siteCity) {
+        if(siteCities.contains(siteCity))
+            return;
+
+        siteCities.add(siteCity);
+        siteCity.setSite(this);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof Site){
+            Site other = (Site) obj;
+            return other.getName().equals(this.getName()) &&
+                    other.getUrl().equals(this.getUrl()) &&
+                    other.getCityCssSelector().equals(this.getCityCssSelector()) &&
+                    other.getCitySelectFormSelector().equals(this.getCitySelectFormSelector()) &&
+                    other.getMovieLinkCssSelector().equals(this.getMovieLinkCssSelector()) &&
+                    other.getMovieListCssSelector().equals(this.getMovieListCssSelector()) &&
+                    other.getMovieNameCssSelector().equals(this.getMovieNameCssSelector()) &&
+                    other.getMovieRowCssSelector().equals(this.getMovieRowCssSelector()) &&
+                    other.getMovieShowTimeCssSelector().equals(this.getMovieShowTimeCssSelector()) &&
+                    other.getMovieSynopsisCssSelector().equals(this.getMovieSynopsisCssSelector()) &&
+                    other.getMoviesScrappingFrequencyInDays().equals(this.getMoviesScrappingFrequencyInDays());
+        } else {
+            return false;
+        }
+    }
 }
