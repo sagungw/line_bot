@@ -2,10 +2,12 @@ package models;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.StringUtils;
 
-import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.List;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 
 @Entity
 public class City {
@@ -19,27 +21,30 @@ public class City {
     @Column(unique = true)
     @Getter
     @Setter
+    private Integer value;
+
+    @Column(unique = true)
+    @Getter
+    @Setter
     private String name;
 
-    @OneToMany(mappedBy = "primaryKeys.city", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @Setter
+    @Column
     @Getter
-    private List<SiteCity> siteCities = new ArrayList<>();
+    @Setter
+    private String displayName;
 
     public City() {
-
     }
 
-    public City(String name) {
-        this.name = name;
+    public City(String displayName) {
+        this.displayName = displayName;
+        this.name = StringUtils.capitalize(displayName.toLowerCase());
     }
 
-    public void addSiteCity(SiteCity siteCity) {
-        if(siteCities.contains(siteCity))
-            return;
-
-        siteCities.add(siteCity);
-        siteCity.setCity(this);
+    public City(Integer value, String displayName) {
+        this.value = value;
+        this.displayName = displayName;
+        this.name = StringUtils.capitalize(displayName.toLowerCase());
     }
 
 }

@@ -52,8 +52,16 @@ public class Theater {
     @Getter
     private List<TheaterMovie> theaterMovies;
 
+    public Theater() {
+    }
+
     public Theater(String name) {
         this.setNameWithChain(name);
+    }
+
+    public Theater(String name, String url) {
+        this(name);
+        this.url = url;
     }
 
     public void setNameWithChain(String name) {

@@ -1,13 +1,13 @@
 package scrappers.xxi_cineplex;
 
 import com.google.inject.Inject;
+import models.City;
 import models.Site;
-import models.SiteCity;
 import models.Theater;
-import org.apache.commons.lang3.StringUtils;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.Select;
+import play.Logger;
 import play.db.jpa.JPAApi;
 import scrappers.WebDriver;
 
@@ -24,26 +24,43 @@ public class TheatersScrapper extends XXICineplexScrapper {
     public void scrap(Site site) {
         webDriver.navigate().to(site.getUrl());
         site.getTheatersEntryCssSelectors().forEach(selector -> webDriver.findElement(By.cssSelector(selector)).click());
-        Select citySelection = new Select(webDriver.findElement(By.cssSelector(site.getCitySelectFormSelector())));
 
-        List<SiteCity> siteCities = jpaApi.withTransaction(entityManager -> {
-            Query query = entityManager.createQuery("SELECT ");
+        List<City> cities = jpaApi.withTransaction(entityManager -> {
+            Query query = entityManager.createQuery("SELECT c FROM City c");
             return query.getResultList();
         });
 
-        siteCities.forEach(siteCity -> {
-            citySelection.selectByValue(siteCity.getCity().getName().toUpperCase());
-            webDriver.findElements(By.cssSelector(site.getTheaterCssSelector())).forEach(element -> {
-                webDriver.withClickAndBack(element, () -> {
+        cities.forEach(city -> {
+            Select citySelection = new Select(webDriver.findElement(By.cssSelector(site.getCitySelectFormSelector())));
+            citySelection.selectByVisibleText(city.getDisplayName());
+
+            String theaterCssSelector = site.replaceSelectorPlaceholderWithValue(site.getTheaterCssSelector(), city.getValue().toString());
+
+            List<WebElement> movieLinks = webDriver.findElements(By.cssSelector(theaterCssSelector));
+
+            for (int i = 0; i < movieLinks.size(); i++) {
+                WebElement movieLink = webDriver.findElements(By.cssSelector(theaterCssSelector)).get(i);
+
+                webDriver.withClickAndBack(movieLink, () -> {
                     WebElement theaterNameText = webDriver.findElement(By.cssSelector(site.getTheaterNameCssSelector()));
+                    Theater theater = new Theater(theaterNameText.getText(), webDriver.getCurrentUrl());
 
-                    Theater theater = new Theater(StringUtils.capitalize(theaterNameText.getText().toLowerCase()));
-                    theater.setUrl(webDriver.getCurrentUrl());
+                    List<Theater> existingTheaters = jpaApi.withTransaction(entityManager -> {
+                        Query query = entityManager.createQuery("SELECT t FROM Theater t WHERE t.name = '" + theater.getName() + "'");
+                        return query.getResultList();
+                    });
 
-                    jpaApi.withTransaction(() -> jpaApi.em().persist(theater));
+                    if (existingTheaters.isEmpty()) {
+                        jpaApi.withTransaction(() -> jpaApi.em().persist(theater));
+
+                        Logger.info("fetched " + theater.getName());
+                    }
                 });
-            });
+            }
+
         });
+
+        webDriver.close();
     }
 
 }

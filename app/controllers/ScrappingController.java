@@ -27,6 +27,7 @@ public class ScrappingController extends Controller {
         this.theaterScrapper = theaterScrapper;
     }
 
+    // Just for testing. Will be using schedule instead.
     @BodyParser.Of(BodyParser.Json.class)
     public Result scrapCity() {
         JsonNode json = request().body().asJson();
@@ -42,19 +43,20 @@ public class ScrappingController extends Controller {
         }
     }
 
+    // Just for testing. Will be using schedule instead.
     @BodyParser.Of(BodyParser.Json.class)
     public Result scrapTheater() {
-//        JsonNode json = request().body().asJson();
-//        String sitePropertiesFileName = json.findValue("file_prop_name").asText();
-//
-//        try {
-//            Site site = siteBuilder.buildSiteFromJson(sitePropertiesFileName);
-//            theaterScrapper.scrap(site);
-            return ok("Cities data from the website is successfully fetched");
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            return notFound();
-//        }
+        JsonNode json = request().body().asJson();
+        String sitePropertiesFileName = json.findValue("file_prop_name").asText();
+
+        try {
+            Site site = siteBuilder.buildSiteFromJson(sitePropertiesFileName);
+            theaterScrapper.scrap(site);
+            return ok("Theater data from the website is successfully fetched");
+        } catch (IOException e) {
+            e.printStackTrace();
+            return notFound();
+        }
     }
 
 }
