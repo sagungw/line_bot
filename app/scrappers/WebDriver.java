@@ -12,6 +12,7 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
 
 public class WebDriver extends PhantomJSDriver {
@@ -34,8 +35,12 @@ public class WebDriver extends PhantomJSDriver {
         }
     }
 
-    public WebElement findElement(String selector) {
+    public WebElement smartFindElement(String selector) {
         return isXpathExpression(selector) ? this.findElement(By.xpath(selector)) : this.findElement(By.cssSelector(selector));
+    }
+
+    public List<WebElement> smartFindElements(String selector) {
+        return isXpathExpression(selector) ? this.findElements(By.xpath(selector)) : this.findElements(By.cssSelector(selector));
     }
 
     public void withClickAndBack(WebElement element, Runnable runnable) {

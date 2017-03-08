@@ -7,6 +7,7 @@ import org.hibernate.annotations.CascadeType;
 
 import javax.persistence.*;
 import javax.persistence.Entity;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,7 +24,7 @@ public class Movie {
     @Getter
     private String title;
 
-    @Column
+    @Column(length = 10000)
     @Setter
     @Getter
     private String synopsis;
@@ -33,26 +34,21 @@ public class Movie {
     @Getter
     private String imageUrl;
 
-    @OneToMany(mappedBy = "primaryKeys.movie")
+    @OneToMany(mappedBy = "primaryKeys.movie", fetch = FetchType.EAGER)
     @Cascade(CascadeType.ALL)
     @Setter
     @Getter
-    private List<TheaterMovie> theaterMovies;
+    private List<TheaterMovie> theaterMovies = new ArrayList<>();
+
+    public Movie(){}
 
     public Movie(String title) {
-        this.title = this.normalizeTitle(title);
+        this.title = title;
     }
 
     public Movie(String title, String synopsis) {
         this(title);
         this.synopsis = synopsis;
-    }
-
-    private String normalizeTitle(String title) {
-        if (title.contains("(IMAX 3D)")) {
-            title = title.replace(" (IMAX 3D)", "");
-        }
-        return title;
     }
 
 }

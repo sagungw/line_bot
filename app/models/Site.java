@@ -46,11 +46,6 @@ public class Site {
     @Getter
     private String theaterNameCssSelector;
     
-    @JsonProperty("movie_list_css_selector")
-    @Setter
-    @Getter
-    private String movieListCssSelector;
-    
     @JsonProperty("movie_row_css_selector")
     @Setter
     @Getter

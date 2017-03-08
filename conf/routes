@@ -7,6 +7,8 @@ POST    /scrap_city                 controllers.ScrappingController.scrapCity
 
 POST    /scrap_theater              controllers.ScrappingController.scrapTheater
 
+POST    /scrap_movie                controllers.ScrappingController.scrapMovie
+
 GET     /actor_start                controllers.ScrappingSchedulerController.startActor
 
 GET     /actor_stop                 controllers.ScrappingSchedulerController.stopActor

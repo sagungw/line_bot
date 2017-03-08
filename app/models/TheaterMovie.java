@@ -35,6 +35,10 @@ public class TheaterMovie {
     @Getter
     private List<String> showTime;
 
+    public TheaterMovie() {
+
+    }
+
     public TheaterMovie(String rawMovieName) {
         this.is3D = this.is3D(rawMovieName);
     }
@@ -43,6 +47,11 @@ public class TheaterMovie {
         this(rawMovieName);
         this.setMovie(movie);
         this.setTheater(theater);
+    }
+
+    public TheaterMovie(String rawMovieName, Movie movie, Theater theater, List<String> showTimes) {
+        this(rawMovieName, movie, theater);
+        this.showTime = showTimes;
     }
 
     public void setMovie(Movie movie) {
@@ -64,7 +73,8 @@ public class TheaterMovie {
     }
 
     private boolean is3D(String rawMovieName) {
-        return rawMovieName.toLowerCase().contains("(imax 3d)");
+        String titleLowCase = rawMovieName.toLowerCase();
+        return titleLowCase.contains("(imax 3d)") || titleLowCase.contains("(3d)");
     }
 
 }
