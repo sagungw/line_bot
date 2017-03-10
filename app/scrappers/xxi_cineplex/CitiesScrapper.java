@@ -8,6 +8,9 @@ import play.Logger;
 import play.db.jpa.JPAApi;
 import scrappers.WebDriver;
 
+import javax.persistence.Query;
+import java.util.List;
+
 public class CitiesScrapper extends XXICineplexScrapper {
 
     @Inject
@@ -21,9 +24,19 @@ public class CitiesScrapper extends XXICineplexScrapper {
 
         webDriver.findElements(By.cssSelector(site.getCityCssSelector())).forEach(element -> {
             City city = new City(Integer.parseInt(element.getAttribute("value")), element.getText());
-            jpaApi.withTransaction(() -> jpaApi.em().persist(city));
 
-            Logger.info("fetched " + city.getName());
+            List<City> existingCities = jpaApi.withTransaction(entityManager -> {
+                Query query = entityManager.createQuery("SELECT c FROM City c WHERE c.name = '" + city.getName() + "'");
+                return query.getResultList();
+            });
+
+            if (existingCities.isEmpty()) {
+                jpaApi.withTransaction(() -> jpaApi.em().persist(city));
+                Logger.info("fetched " + city.getName());
+            } else {
+                Logger.info("skiped " + city.getName());
+            }
+
         });
 
         webDriver.close();

@@ -10,8 +10,8 @@ import models.builders.SiteBuilder;
 import play.mvc.Controller;
 import play.mvc.Result;
 import scala.concurrent.duration.Duration;
+import scrappers.xxi_cineplex.MoviesScrapper;
 
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 public class MovieScrappingSchedulerController extends Controller {
@@ -24,17 +24,20 @@ public class MovieScrappingSchedulerController extends Controller {
 
     private SiteBuilder siteBuilder;
 
+    private MoviesScrapper movieScrapper;
+
     @Inject
-    public MovieScrappingSchedulerController(ActorSystem actorSystem, SiteBuilder siteBuilder) {
+    public MovieScrappingSchedulerController(ActorSystem actorSystem, SiteBuilder siteBuilder, MoviesScrapper movieScrapper) {
         this.actorSystem = actorSystem;
         this.siteBuilder = siteBuilder;
+        this.movieScrapper = movieScrapper;
     }
 
     public Result startActor() {
         try {
             int frequencyInDays = Integer.parseInt(request().getQueryString("frequency_in_days"));
 
-            this.movieScrappingActor = actorSystem.actorOf(Props.create(ACTOR_CLASS));
+            this.movieScrappingActor = actorSystem.actorOf(Props.create(ACTOR_CLASS, movieScrapper));
 
             Site site = this.siteBuilder.buildSiteFromJson("21cineplex");
             actorSystem.scheduler().schedule(Duration.create(0, TimeUnit.DAYS), Duration.create(frequencyInDays, TimeUnit.DAYS), this.movieScrappingActor, site, actorSystem.dispatcher(), null);

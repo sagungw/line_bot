@@ -42,9 +42,8 @@ public class City {
     }
 
     public City(Integer value, String displayName) {
+        this(displayName);
         this.value = value;
-        this.displayName = displayName;
-        this.name = StringUtils.capitalize(displayName.toLowerCase());
     }
 
 }

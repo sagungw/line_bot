@@ -54,6 +54,8 @@ public class TheatersScrapper extends XXICineplexScrapper {
                         jpaApi.withTransaction(() -> jpaApi.em().persist(theater));
 
                         Logger.info("fetched " + theater.getName());
+                    } else {
+                        Logger.info("skipped " + theater.getName());
                     }
                 });
             }
