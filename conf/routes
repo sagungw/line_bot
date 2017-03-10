@@ -9,9 +9,17 @@ POST    /scrap_theater              controllers.ScrappingController.scrapTheater
 
 POST    /scrap_movie                controllers.ScrappingController.scrapMovie
 
-GET     /actor_start                controllers.ScrappingSchedulerController.startActor
+GET     /scrapper/movie/start_schedule                controllers.MovieScrappingSchedulerController.startActor
 
-GET     /actor_stop                 controllers.ScrappingSchedulerController.stopActor
+GET     /scrapper/movie/stop_schedule                 controllers.MovieScrappingSchedulerController.stopActor
+
+GET     /scrapper/theater/start_schedule                controllers.TheaterScrappingSchedulerController.startActor
+
+GET     /scrapper/theater/stop_schedule                 controllers.TheaterScrappingSchedulerController.stopActor
+
+GET     /scrapper/city/start_schedule                controllers.CityScrappingSchedulerController.startActor
+
+GET     /scrapper/city/stop_schedule                 controllers.CityScrappingSchedulerController.stopActor
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

@@ -76,6 +76,16 @@ public class Site {
     @Getter
     private Integer moviesScrappingFrequencyInDays = 0;
 
+    @JsonProperty("theater_scrapping_frequency_in_days")
+    @Setter
+    @Getter
+    private Integer theaterScrappingFrequencyInDays = 0;
+
+    @JsonProperty("city_scrapping_frequency_in_days")
+    @Setter
+    @Getter
+    private Integer cityScrappingFrequencyInDays = 0;
+
     public String replaceSelectorPlaceholderWithValue(String selector, String value) {
         return selector.replace("{{value}}", value);
     }
