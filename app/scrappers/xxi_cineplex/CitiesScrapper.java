@@ -26,7 +26,7 @@ public class CitiesScrapper extends XXICineplexScrapper {
             City city = new City(Integer.parseInt(element.getAttribute("value")), element.getText());
 
             List<City> existingCities = jpaApi.withTransaction(entityManager -> {
-                Query query = entityManager.createQuery("SELECT c FROM " + City.class.getName() + " c WHERE c.name = '" + city.getName() + "'");
+                Query query = entityManager.createQuery("SELECT c FROM City c WHERE c.name = '" + city.getName() + "'");
                 return query.getResultList();
             });
 
