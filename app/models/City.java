@@ -26,7 +26,7 @@ public class City {
     @Setter
     private String name;
 
-    @Column
+    @Column(name = "display_name")
     @Getter
     @Setter
     private String displayName;
