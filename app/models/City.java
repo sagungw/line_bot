@@ -7,7 +7,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.persistence.*;
 
 @Entity
-@Table
+@Table(name = "city")
 public class City {
 
     @Id
