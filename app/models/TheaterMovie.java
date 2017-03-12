@@ -18,12 +18,12 @@ public class TheaterMovie {
     @Getter
     private TheaterMovieId primaryKeys = new TheaterMovieId();
 
-    @Column(nullable = false)
+    @Column(name = "is_3d", nullable = false)
     @Setter
     @Getter
     private boolean is3D = false;
 
-    @Column(nullable = false)
+    @Column(name = "is_now_playing", nullable = false)
     @Setter
     @Getter
     private boolean isNowPlaying = false;

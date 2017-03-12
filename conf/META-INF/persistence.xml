@@ -7,6 +7,9 @@
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
         <non-jta-data-source>DefaultDS</non-jta-data-source>
         <class>models.City</class>
+        <class>models.Movie</class>
+        <class>models.Theater</class>
+        <class>models.TheaterMovie</class>
         <properties>
             <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL95Dialect"/>
             <property name="hibernate.hbm2ddl.auto" value="update"/>
