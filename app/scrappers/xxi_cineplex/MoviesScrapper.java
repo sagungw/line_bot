@@ -29,7 +29,18 @@ public class MoviesScrapper extends XXICineplexScrapper {
             return query.getResultList();
         });
 
-        theaters.forEach(theater -> {
+        theaters.stream().forEach(theater -> {
+
+            List<TheaterMovie> theaterMovies = jpaApi.withTransaction(entityManager -> {
+                Query query = entityManager.createQuery("SELECT tm FROM theater_movie tm WHERE tm.primaryKeys.theater = " + theater.getId() + " AND tm.isNowPlaying = true");
+                return query.getResultList();
+            });
+
+            theaterMovies.forEach(tm -> {
+                tm.setNowPlaying(false);
+                jpaApi.withTransaction(() -> jpaApi.em().merge(tm));
+            });
+
             webDriver.navigate().to(theater.getUrl());
             List<WebElement> movieRows = webDriver.smartFindElements(site.getMovieRowCssSelector());
 
@@ -48,7 +59,8 @@ public class MoviesScrapper extends XXICineplexScrapper {
                     String title = webDriver.findElement(By.cssSelector(site.getMovieNameCssSelector())).getText();
 
                     List<Movie> existingMovies = jpaApi.withTransaction(entityManager -> {
-                        Query query = entityManager.createQuery("SELECT m FROM Movie m WHERE m.title = '" + this.normalizeTitle(title) + "'");
+                        Query query = entityManager.createQuery("SELECT m FROM Movie m WHERE m.title = :title");
+                        query.setParameter("title", this.normalizeTitle(title));
                         return query.getResultList();
                     });
 
@@ -66,12 +78,12 @@ public class MoviesScrapper extends XXICineplexScrapper {
                     } else {
                         Movie movie = existingMovies.get(0);
 
-                        List<TheaterMovie> theaterMovies = jpaApi.withTransaction(entityManager -> {
+                        List<TheaterMovie> existingTms = jpaApi.withTransaction(entityManager -> {
                             Query query = entityManager.createQuery("SELECT tm FROM theater_movie tm WHERE tm.primaryKeys.movie.id = " + movie.getId() + " AND tm.primaryKeys.theater.id = " + theater.getId());
                             return query.getResultList();
                         });
 
-                        if(theaterMovies.isEmpty()) {
+                        if(existingTms.isEmpty()) {
                             TheaterMovie theaterMovie = new TheaterMovie(title, movie, theater, showTimes);
                             theaterMovie.setNowPlaying(true);
 
@@ -79,10 +91,13 @@ public class MoviesScrapper extends XXICineplexScrapper {
 
                             Logger.info("fetched " + theaterMovie.getTheater().getName() + ": " + theaterMovie.getMovie().getTitle());
                         } else {
-                            Logger.info("skipped " + theaterMovies.get(0).getTheater().getName() + ": " + theaterMovies.get(0).getMovie().getTitle());
+                            TheaterMovie theaterMovie = existingTms.get(0);
+                            theaterMovie.setNowPlaying(true);
+
+                            jpaApi.withTransaction(() -> jpaApi.em().merge(theaterMovie));
+                            Logger.info("skipped " + existingTms.get(0).getTheater().getName() + ": " + existingTms.get(0).getMovie().getTitle());
                         }
                     }
-
 
                 });
             }
