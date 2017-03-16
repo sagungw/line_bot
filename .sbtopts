@@ -1,1 +1,2 @@
--J-Xmx768m -J-Xms512m
+-J-Xmx768m
+-J-Xms512m
