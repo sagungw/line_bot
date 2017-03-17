@@ -39,7 +39,6 @@ public class CitiesScrapper extends XXICineplexScrapper {
 
         });
 
-        webDriver.close();
     }
 
 }

@@ -62,7 +62,6 @@ public class TheatersScrapper extends XXICineplexScrapper {
 
         });
 
-        webDriver.close();
     }
 
 }
