@@ -9,7 +9,7 @@
   "theaters_entry_css_selectors": [
     "li.mn4 > a"
   ],
-  "theater_css_selector": "table.table-theater tr[data-city='{{value}}'] a",
+  "theater_css_selector": "table.table-theater tr[data-city] a",
   "theater_name_css_selector": "div.col-m_462 div.col-title h2",
   "movie_row_css_selector": "//div[@id='makan'][1]//tr[not(@class='title')]",
   "movie_link_css_selector": "img.thumb5",

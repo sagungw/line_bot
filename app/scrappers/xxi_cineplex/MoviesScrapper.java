@@ -44,9 +44,6 @@ public class MoviesScrapper extends XXICineplexScrapper {
             webDriver.navigate().to(theater.getUrl());
             List<WebElement> movieRows = webDriver.smartFindElements(site.getMovieRowCssSelector());
 
-            List<Movie> movies = new ArrayList<>();
-            List<TheaterMovie> foundMovies = new ArrayList<>();
-
             for (int i = 0; i < movieRows.size(); i++) {
                 WebElement movieRow = webDriver.smartFindElements(site.getMovieRowCssSelector()).get(i);
 

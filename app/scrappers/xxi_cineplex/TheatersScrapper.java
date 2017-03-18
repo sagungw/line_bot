@@ -25,42 +25,31 @@ public class TheatersScrapper extends XXICineplexScrapper {
         webDriver.navigate().to(site.getUrl());
         site.getTheatersEntryCssSelectors().forEach(selector -> webDriver.findElement(By.cssSelector(selector)).click());
 
-        List<City> cities = jpaApi.withTransaction(entityManager -> {
-            Query query = entityManager.createQuery("SELECT c FROM City c");
-            return query.getResultList();
-        });
+        List<WebElement> theaterLinks = webDriver.findElements(By.cssSelector(site.getTheaterCssSelector()));
 
-        cities.forEach(city -> {
-            Select citySelection = new Select(webDriver.findElement(By.cssSelector(site.getCitySelectFormSelector())));
-            citySelection.selectByVisibleText(city.getDisplayName());
+        for (int i = 0; i < theaterLinks.size(); i++) {
+            WebElement theaterLink = theaterLinks.get(i);
 
-            String theaterCssSelector = site.replaceSelectorPlaceholderWithValue(site.getTheaterCssSelector(), city.getValue().toString());
+            WebElement span = theaterLink.findElement(By.cssSelector("span"));
+            webDriver.executeScript("arguments[0].parentNode.removeChild(arguments[0])", span);
 
-            List<WebElement> movieLinks = webDriver.findElements(By.cssSelector(theaterCssSelector));
+            String theaterName = theaterLink.getAttribute("textContent");
 
-            for (int i = 0; i < movieLinks.size(); i++) {
-                WebElement movieLink = webDriver.findElements(By.cssSelector(theaterCssSelector)).get(i);
+            List<Theater> existingTheaters = jpaApi.withTransaction(entityManager -> {
+                Query query = entityManager.createQuery("SELECT t FROM Theater t WHERE t.name = '" + theaterName + "'");
+                return query.getResultList();
+            });
 
-                webDriver.withClickAndBack(movieLink, () -> {
-                    WebElement theaterNameText = webDriver.findElement(By.cssSelector(site.getTheaterNameCssSelector()));
-                    Theater theater = new Theater(theaterNameText.getText(), webDriver.getCurrentUrl());
+            if (existingTheaters.isEmpty()) {
+                Theater theater = new Theater(theaterName, theaterLink.getAttribute("href"));
 
-                    List<Theater> existingTheaters = jpaApi.withTransaction(entityManager -> {
-                        Query query = entityManager.createQuery("SELECT t FROM Theater t WHERE t.name = '" + theater.getName() + "'");
-                        return query.getResultList();
-                    });
-
-                    if (existingTheaters.isEmpty()) {
-                        jpaApi.withTransaction(() -> jpaApi.em().persist(theater));
-
-                        Logger.info("fetched " + theater.getName());
-                    } else {
-                        Logger.info("skipped " + theater.getName());
-                    }
-                });
+                jpaApi.withTransaction(() -> jpaApi.em().persist(theater));
+                Logger.info("fetched " + theaterName);
+            } else {
+                Logger.info("skipped " + theaterName);
             }
 
-        });
+        }
 
     }
 
