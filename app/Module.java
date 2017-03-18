@@ -19,7 +19,6 @@ public class Module extends AbstractModule {
 
     @Inject
     @Provides
-    @Singleton
     public WebDriver provideWebScrapper(Configuration configuration) {
         final String phantomJSPath = configuration.underlying().getString("phantomjs.path");
 
