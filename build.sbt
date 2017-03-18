@@ -16,5 +16,6 @@ libraryDependencies ++= Seq(
   "org.hibernate" % "hibernate-core" % "5.2.6.Final",
   "org.projectlombok" % "lombok" % "1.16.12",
   "com.codeborne" % "phantomjsdriver" % "1.3.0",
-  "com.linecorp.bot" % "line-bot-servlet" % "1.6.0"
+  "io.github.bonigarcia" % "webdrivermanager" % "1.6.0",
+  "com.linecorp.bot" % "line-bot-api-client" % "1.6.0"
 )
