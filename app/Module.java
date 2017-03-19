@@ -5,7 +5,6 @@ import com.google.inject.Singleton;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import play.api.Configuration;
-import play.libs.akka.AkkaGuiceSupport;
 import scrappers.WebDriver;
 
 import java.time.Clock;
@@ -19,6 +18,7 @@ public class Module extends AbstractModule {
 
     @Inject
     @Provides
+    @Singleton
     public WebDriver provideWebScrapper(Configuration configuration) {
         final String phantomJSPath = configuration.underlying().getString("phantomjs.path");
 
