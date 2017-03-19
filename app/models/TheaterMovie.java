@@ -30,7 +30,7 @@ public class TheaterMovie {
     private boolean isNowPlaying = false;
 
     @ElementCollection
-    @CollectionTable(name = "show_times", joinColumns = {@JoinColumn(name = "theater_id", referencedColumnName = "theater_id"), @JoinColumn(name = "movie_id", referencedColumnName = "movie_id")})
+    @CollectionTable(name = "show_times", joinColumns = {@JoinColumn(name = "theater_id"), @JoinColumn(name = "movie_id")})
     @Setter
     @Getter
     private List<String> showTimes = new ArrayList<>();

@@ -93,6 +93,7 @@ public class MoviesScrapper extends XXICineplexScrapper {
                     showTimes.forEach(theaterMovie::addShowTime);
 
                     jpaApi.withTransaction(() -> jpaApi.em().merge(theaterMovie));
+
                     Logger.info("skipped " + existingTheaterMovies.get(0).getTheater().getName() + ": " + existingTheaterMovies.get(0).getMovie().getTitle());
                 }
 
