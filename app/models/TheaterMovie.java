@@ -4,6 +4,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity(name = "theater_movie")
@@ -29,11 +30,10 @@ public class TheaterMovie {
     private boolean isNowPlaying = false;
 
     @ElementCollection
-    @CollectionTable(name = "show_times", joinColumns = {@JoinColumn(name = "theater_id"), @JoinColumn(name = "movie_id")})
-    @Column(name = "show_times")
+    @CollectionTable(name = "show_times", joinColumns = {@JoinColumn(name = "theater_id", referencedColumnName = "theater_id"), @JoinColumn(name = "movie_id", referencedColumnName = "movie_id")})
     @Setter
     @Getter
-    private List<String> showTime;
+    private List<String> showTimes = new ArrayList<>();
 
     public TheaterMovie() {
 
@@ -51,7 +51,7 @@ public class TheaterMovie {
 
     public TheaterMovie(String rawMovieName, Movie movie, Theater theater, List<String> showTimes) {
         this(rawMovieName, movie, theater);
-        this.showTime = showTimes;
+        this.showTimes = showTimes;
     }
 
     public void setMovie(Movie movie) {
@@ -70,6 +70,12 @@ public class TheaterMovie {
     @Transient
     public Theater getTheater() {
         return this.primaryKeys.getTheater();
+    }
+
+    public void addShowTime(String showTime) {
+        if(!this.showTimes.contains(showTime)) {
+            this.showTimes.add(showTime);
+        }
     }
 
     private boolean is3D(String rawMovieName) {

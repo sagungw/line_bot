@@ -5,16 +5,15 @@ import models.Movie;
 import models.Site;
 import models.Theater;
 import models.TheaterMovie;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;
 import play.Logger;
 import play.db.jpa.JPAApi;
 import scrappers.WebDriver;
 
 import javax.persistence.Query;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MoviesScrapper extends XXICineplexScrapper {
 
@@ -29,44 +28,50 @@ public class MoviesScrapper extends XXICineplexScrapper {
             return query.getResultList();
         });
 
-        theaters.stream().forEach(theater -> {
-
+        theaters.forEach(theater -> {
             List<TheaterMovie> theaterMovies = jpaApi.withTransaction(entityManager -> {
-                Query query = entityManager.createQuery("SELECT tm FROM theater_movie tm WHERE tm.primaryKeys.theater = " + theater.getId() + " AND tm.isNowPlaying = true");
+                Query query = entityManager.createQuery("SELECT tm FROM theater_movie tm JOIN FETCH tm.showTimes WHERE tm.primaryKeys.theater.id = " + theater.getId() + " AND tm.isNowPlaying = true");
                 return query.getResultList();
             });
 
             theaterMovies.forEach(tm -> {
+                tm.getShowTimes().clear();
                 tm.setNowPlaying(false);
+
                 jpaApi.withTransaction(() -> jpaApi.em().merge(tm));
             });
 
             webDriver.navigate().to(theater.getUrl());
-            List<WebElement> movieRows = webDriver.smartFindElements(site.getMovieRowCssSelector());
+            List<String> movieLinks = webDriver.smartFindElements(site.getMovieLinkCssSelector()).stream().map(WebElement::getText).collect(Collectors.toList());
+            List<String> showTimeStrings = webDriver.smartFindElements(site.getMovieShowTimeCssSelector()).stream().map(WebElement::getText).collect(Collectors.toList());
 
-            for (int i = 0; i < movieRows.size(); i++) {
-                WebElement movieRow = webDriver.smartFindElements(site.getMovieRowCssSelector()).get(i);
+            for (int i = 0; i < movieLinks.size(); i++) {
 
-                String showTime = movieRow.findElement(By.cssSelector(site.getMovieShowTimeCssSelector())).getText();
-                List<String> showTimes = Arrays.asList(showTime.split("  "));
+                String rawTitle = movieLinks.get(i);
+                String title = this.normalizeTitle(rawTitle);
 
-                WebElement movieLinkCssSelector = movieRow.findElement(By.cssSelector(site.getMovieLinkCssSelector()));
-                webDriver.withClickAndBack(movieLinkCssSelector, () -> {
-                    String synopsis = webDriver.findElement(By.cssSelector(site.getMovieSynopsisCssSelector())).getText();
-                    String title = webDriver.findElement(By.cssSelector(site.getMovieNameCssSelector())).getText();
+                List<TheaterMovie> existingTheaterMovies =  jpaApi.withTransaction(entityManager -> {
+                    Query q = entityManager.createQuery("SELECT DISTINCT tm FROM theater_movie tm LEFT JOIN FETCH tm.showTimes WHERE tm.primaryKeys.movie.title = :title AND tm.primaryKeys.theater.id = :theater_id");
+                    q.setParameter("title", title);
+                    q.setParameter("theater_id", theater.getId());
+                    return q.getResultList();
+                });
 
+                List<String> showTimes = Arrays.asList(showTimeStrings.get(i).split("  "));
+                showTimes.set(showTimes.size() - 1, showTimes.get(showTimes.size() - 1).replace(" ", ""));
+
+                if(existingTheaterMovies.isEmpty()) {
                     List<Movie> existingMovies = jpaApi.withTransaction(entityManager -> {
                         Query query = entityManager.createQuery("SELECT m FROM Movie m WHERE m.title = :title");
-                        query.setParameter("title", this.normalizeTitle(title));
+                        query.setParameter("title", title);
                         return query.getResultList();
                     });
 
                     if (existingMovies.isEmpty()) {
-                        Movie movie = new Movie(this.normalizeTitle(title), synopsis);
+                        Movie movie = new Movie(title);
 
-                        TheaterMovie theaterMovie = new TheaterMovie(title, movie, theater, showTimes);
+                        TheaterMovie theaterMovie = new TheaterMovie(rawTitle, movie, theater, showTimes);
                         theaterMovie.setNowPlaying(true);
-
                         movie.getTheaterMovies().add(theaterMovie);
 
                         jpaApi.withTransaction(() -> jpaApi.em().persist(movie));
@@ -75,28 +80,22 @@ public class MoviesScrapper extends XXICineplexScrapper {
                     } else {
                         Movie movie = existingMovies.get(0);
 
-                        List<TheaterMovie> existingTms = jpaApi.withTransaction(entityManager -> {
-                            Query query = entityManager.createQuery("SELECT tm FROM theater_movie tm WHERE tm.primaryKeys.movie.id = " + movie.getId() + " AND tm.primaryKeys.theater.id = " + theater.getId());
-                            return query.getResultList();
-                        });
+                        TheaterMovie theaterMovie = new TheaterMovie(rawTitle, movie, theater, showTimes);
+                        theaterMovie.setNowPlaying(true);
 
-                        if(existingTms.isEmpty()) {
-                            TheaterMovie theaterMovie = new TheaterMovie(title, movie, theater, showTimes);
-                            theaterMovie.setNowPlaying(true);
+                        jpaApi.withTransaction(() -> jpaApi.em().persist(theaterMovie));
 
-                            jpaApi.withTransaction(() -> jpaApi.em().persist(theaterMovie));
-
-                            Logger.info("fetched " + theaterMovie.getTheater().getName() + ": " + theaterMovie.getMovie().getTitle());
-                        } else {
-                            TheaterMovie theaterMovie = existingTms.get(0);
-                            theaterMovie.setNowPlaying(true);
-
-                            jpaApi.withTransaction(() -> jpaApi.em().merge(theaterMovie));
-                            Logger.info("skipped " + existingTms.get(0).getTheater().getName() + ": " + existingTms.get(0).getMovie().getTitle());
-                        }
+                        Logger.info("fetched " + theaterMovie.getTheater().getName() + ": " + theaterMovie.getMovie().getTitle());
                     }
+                } else {
+                    TheaterMovie theaterMovie = existingTheaterMovies.get(0);
+                    theaterMovie.setNowPlaying(true);
+                    showTimes.forEach(theaterMovie::addShowTime);
 
-                });
+                    jpaApi.withTransaction(() -> jpaApi.em().merge(theaterMovie));
+                    Logger.info("skipped " + existingTheaterMovies.get(0).getTheater().getName() + ": " + existingTheaterMovies.get(0).getMovie().getTitle());
+                }
+
             }
         });
     }
