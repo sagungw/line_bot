@@ -59,8 +59,10 @@ public class Webhook extends Controller {
                                 .build()
                                 .replyMessage(new ReplyMessage(replyToken, msg))
                                 .execute();
-
-                return ok(response.code() + " " + response.message());
+                Logger.info("Code: " + Integer.toString(response.code()));
+                Logger.info("Message: " + response.message());
+                Logger.info("Error: " + response.errorBody().toString());
+                return ok(response.message());
             } catch (Exception e) {
                 e.printStackTrace();
             }
