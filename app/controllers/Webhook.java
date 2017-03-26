@@ -1,60 +1,72 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
-
+import com.google.inject.Inject;
+import com.linecorp.bot.client.LineMessagingServiceBuilder;
+import com.linecorp.bot.model.ReplyMessage;
+import com.linecorp.bot.model.action.Action;
+import com.linecorp.bot.model.action.MessageAction;
+import com.linecorp.bot.model.action.PostbackAction;
+import com.linecorp.bot.model.action.URIAction;
+import com.linecorp.bot.model.message.TemplateMessage;
+import com.linecorp.bot.model.message.template.ButtonsTemplate;
+import com.linecorp.bot.model.response.BotApiResponse;
+import play.Logger;
+import play.api.Configuration;
+import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
-
-import com.linecorp.bot.model.message.TextMessage;
-import com.linecorp.bot.model.*;
-import com.linecorp.bot.model.response.*;
-
-import com.linecorp.bot.client.*;
-import com.linecorp.bot.model.ReplyMessage;
-import com.linecorp.bot.model.event.Event;
-import com.linecorp.bot.model.event.MessageEvent;
-import com.linecorp.bot.model.event.message.TextMessageContent;
-import com.linecorp.bot.model.message.TextMessage;
-import com.linecorp.bot.model.response.BotApiResponse;
-
 import retrofit2.Response;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class Webhook extends Controller {
 
+    private String lineChannelToken;
+
+    @Inject
+    public Webhook(Configuration configuration) {
+        this.lineChannelToken = configuration.underlying().getString("line.channel-token");
+    }
+
     @BodyParser.Of(BodyParser.Json.class)
-    public Result webhook(){
+    public Result webhook() {
         JsonNode root = request().body().asJson();
 
         JsonNode events = root.get("events");
 
-        for(final JsonNode event : events) {
+        for (final JsonNode event : events) {
+            Logger.info(Json.prettyPrint(event));
+
             String replyToken = event.get("replyToken").asText();
 
-            TextMessage textMessage = new TextMessage("helllo test ajaaa");
-            ReplyMessage replyMessage = new ReplyMessage(
-                    replyToken,
-                    textMessage
-            );
+            List<Action> actions = new ArrayList<>();
+            actions.add(new PostbackAction("Ini label", "{ \"ini\" : \"data\" }", "ini text"));
+            actions.add(new MessageAction("ini label", "ini text"));
+            actions.add(new URIAction("ini label", "ini uri"));
+
+            ButtonsTemplate template = new ButtonsTemplate("", "ini title", "ini text", actions);
+
+            TemplateMessage msg = new TemplateMessage("Buttons template", template);
 
             try {
                 Response<BotApiResponse> response =
                         LineMessagingServiceBuilder
-                                .create("rP63jrXrKhxQRsiHW4y/kvJxajyOXeAiC3/mR0rziwHlo34mrKpNyRZY0xlA5Py9KfDkZhhWEnRTDsNDpBGE5d/JPsAtCCgLzxnSWQxoHoRHQr6xSB7nxS2jY9r92G/abL2IO8W/UbFeaAoBK1SczgdB04t89/1O/w1cDnyilFU=")
+                                .create(this.lineChannelToken)
                                 .build()
-                                .replyMessage(replyMessage)
+                                .replyMessage(new ReplyMessage(replyToken, msg))
                                 .execute();
 
-                return ok(response.code() + " "+response.message());
-
-
-            } catch(Exception e) {
+                return ok(response.code() + " " + response.message());
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         }
 
-        return ok("nothign");
+        return ok("nothing");
     }
 
 }
