@@ -48,7 +48,6 @@ public class Webhook extends Controller {
             List<Action> actions = new ArrayList<>();
             actions.add(new PostbackAction("Ini label", "action=buy&itemid=222", "ini text"));
             actions.add(new MessageAction("ini label", "ini text"));
-            actions.add(new URIAction("ini label", "ini uri"));
 
             ButtonsTemplate template = new ButtonsTemplate("http://www.21cineplex.com/data/gallery/pictures/148792288417018_300x430.jpg", "ini title", "ini text", actions);
 
