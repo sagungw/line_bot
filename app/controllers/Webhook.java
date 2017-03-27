@@ -2,6 +2,8 @@ package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
+import com.linecorp.bot.client.LineMessagingClient;
+import com.linecorp.bot.client.LineMessagingClientImpl;
 import com.linecorp.bot.client.LineMessagingServiceBuilder;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.action.Action;
@@ -44,25 +46,27 @@ public class Webhook extends Controller {
             String replyToken = event.get("replyToken").asText();
 
             List<Action> actions = new ArrayList<>();
-            actions.add(new PostbackAction("Ini label", "{ \"ini\" : \"data\" }", "ini text"));
+            actions.add(new PostbackAction("Ini label", "action=buy&itemid=222", "ini text"));
             actions.add(new MessageAction("ini label", "ini text"));
             actions.add(new URIAction("ini label", "ini uri"));
 
-            ButtonsTemplate template = new ButtonsTemplate("", "ini title", "ini text", actions);
+            ButtonsTemplate template = new ButtonsTemplate("http://www.21cineplex.com/data/gallery/pictures/148792288417018_300x430.jpg", "ini title", "ini text", actions);
 
             TemplateMessage msg = new TemplateMessage("Buttons template", template);
 
             try {
-                Response<BotApiResponse> response =
-                        LineMessagingServiceBuilder
-                                .create(this.lineChannelToken)
-                                .build()
-                                .replyMessage(new ReplyMessage(replyToken, msg))
-                                .execute();
-                Logger.info("Code: " + Integer.toString(response.code()));
-                Logger.info("Message: " + response.message());
-                Logger.info("Error: " + response.errorBody().toString());
-                return ok(response.message());
+                LineMessagingClient client = new LineMessagingClientImpl(LineMessagingServiceBuilder.create(this.lineChannelToken).build());
+                BotApiResponse response = client.replyMessage(new ReplyMessage(replyToken, msg)).get();
+
+                response.getDetails().forEach(s -> Logger.info("Details: " + s));
+                Logger.info("Message: " + response.getMessage());
+
+//                Logger.info("Code: " + Integer.toString(response.code()));
+//                Logger.info("Message: " + response.message());
+//                Logger.info("Error: " + response.raw().body().toString());
+//                Logger.info("Error: " + response.raw().message().toString());
+
+                return ok(response.getMessage());
             } catch (Exception e) {
                 e.printStackTrace();
             }
