@@ -18,7 +18,7 @@ public class TheaterRepository {
 
     public List<Theater> findTheatersByName(String theaterName) {
         return jpaApi.withTransaction(entityManager -> {
-            Query query = entityManager.createQuery("SELECT t FROM Theater t WHERE LOWER(t.name) LIKE '%" + theaterName + "%'");
+            Query query = entityManager.createQuery("SELECT t FROM Theater t WHERE LOWER(t.name) LIKE '%" + theaterName.toLowerCase() + "%'");
             return query.getResultList();
         });
     }

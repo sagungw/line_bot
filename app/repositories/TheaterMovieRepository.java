@@ -26,8 +26,15 @@ public class TheaterMovieRepository {
 
     public List<TheaterMovie> findMoviesScheduleInTheaterById(Integer theaterId) {
         return jpaApi.withTransaction(entityManager -> {
-            Query query = entityManager.createQuery("SELECT tm FROM theater_movie tm JOIN FETCH tm.showTimes WHERE tm.primaryKeys.theater.id = :theaterId");
+            Query query = entityManager.createQuery("SELECT DISTINCT tm FROM theater_movie tm JOIN FETCH tm.showTimes WHERE tm.primaryKeys.theater.id = :theaterId");
             query.setParameter("theaterId", theaterId);
+            return query.getResultList();
+        });
+    }
+
+    public List<TheaterMovie> findMoviesScheduleInTheaterByName(String theaterName) {
+        return jpaApi.withTransaction(entityManager -> {
+            Query query = entityManager.createQuery("SELECT DISTINCT tm FROM theater_movie tm JOIN FETCH tm.showTimes WHERE LOWER(tm.primaryKeys.theater.name) LIKE '%" + theaterName + "%'");
             return query.getResultList();
         });
     }

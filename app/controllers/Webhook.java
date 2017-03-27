@@ -6,22 +6,19 @@ import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.LineMessagingClientImpl;
 import com.linecorp.bot.client.LineMessagingServiceBuilder;
 import com.linecorp.bot.model.ReplyMessage;
-import com.linecorp.bot.model.action.Action;
-import com.linecorp.bot.model.action.MessageAction;
-import com.linecorp.bot.model.action.PostbackAction;
-import com.linecorp.bot.model.action.URIAction;
-import com.linecorp.bot.model.message.TemplateMessage;
-import com.linecorp.bot.model.message.template.ButtonsTemplate;
+import com.linecorp.bot.model.message.Message;
+import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.response.BotApiResponse;
-import play.Logger;
+import models.Theater;
+import models.TheaterMovie;
+import org.apache.commons.lang3.StringUtils;
 import play.api.Configuration;
-import play.libs.Json;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
 import play.mvc.Result;
-import retrofit2.Response;
+import repositories.TheaterMovieRepository;
+import repositories.TheaterRepository;
 
-import java.util.ArrayList;
 import java.util.List;
 
 
@@ -29,9 +26,15 @@ public class Webhook extends Controller {
 
     private String lineChannelToken;
 
+    private TheaterMovieRepository theaterMovieRepository;
+
+    private TheaterRepository theaterRepository;
+
     @Inject
-    public Webhook(Configuration configuration) {
+    public Webhook(Configuration configuration, TheaterMovieRepository theaterMovieRepository, TheaterRepository theaterRepository) {
         this.lineChannelToken = configuration.underlying().getString("line.channel-token");
+        this.theaterMovieRepository = theaterMovieRepository;
+        this.theaterRepository = theaterRepository;
     }
 
     @BodyParser.Of(BodyParser.Json.class)
@@ -41,29 +44,40 @@ public class Webhook extends Controller {
         JsonNode events = root.get("events");
 
         for (final JsonNode event : events) {
-            Logger.info(Json.prettyPrint(event));
-
             String replyToken = event.get("replyToken").asText();
+            String theaterName = event.get("message").get("text").asText();
 
-            List<Action> actions = new ArrayList<>();
-            actions.add(new PostbackAction("Ini label", "action=buy&itemid=222", "ini text"));
-            actions.add(new MessageAction("ini label", "ini text"));
+            Message responseMessage;
 
-            ButtonsTemplate template = new ButtonsTemplate("http://www.21cineplex.com/data/gallery/pictures/148792288417018_300x430.jpg", "ini title", "ini text", actions);
+            List<Theater> theaters = theaterRepository.findTheatersByName(theaterName);
 
-            TemplateMessage msg = new TemplateMessage("Buttons template", template);
+            if (theaters.isEmpty()) {
+                responseMessage = new TextMessage("Sorry, I don't know where that theater is.");
+            } else {
+                if (theaters.size() > 1) {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append("Multiple theaters found. Choose one.\n");
+                    for (int i = 0; i < theaters.size(); i++) {
+                        if (i > 0) System.out.println("");
+                        stringBuilder.append(theaters.get(i).getName() + "\n");
+                    }
+                    responseMessage = new TextMessage(stringBuilder.toString());
+                } else {
+                    List<TheaterMovie> moviesInTheater = this.theaterMovieRepository.findMoviesScheduleInTheaterById(theaters.get(0).getId());
+                    StringBuilder stringBuilder = new StringBuilder();
+                    stringBuilder.append("Here are movie schedule in " + theaterName + "\n");
+                    for (int i = 0; i < moviesInTheater.size(); i++) {
+                        if (i > 0) stringBuilder.append("\n\n");
+                        stringBuilder.append(moviesInTheater.get(i).getMovie().getTitle() + "\n");
+                        stringBuilder.append("Plays at: " + StringUtils.join(moviesInTheater.get(i).getShowTimes(), ", "));
+                    }
+                    responseMessage = new TextMessage(stringBuilder.toString());
+                }
+            }
 
             try {
                 LineMessagingClient client = new LineMessagingClientImpl(LineMessagingServiceBuilder.create(this.lineChannelToken).build());
-                BotApiResponse response = client.replyMessage(new ReplyMessage(replyToken, msg)).get();
-
-                response.getDetails().forEach(s -> Logger.info("Details: " + s));
-                Logger.info("Message: " + response.getMessage());
-
-//                Logger.info("Code: " + Integer.toString(response.code()));
-//                Logger.info("Message: " + response.message());
-//                Logger.info("Error: " + response.raw().body().toString());
-//                Logger.info("Error: " + response.raw().message().toString());
+                BotApiResponse response = client.replyMessage(new ReplyMessage(replyToken, responseMessage)).get();
 
                 return ok(response.getMessage());
             } catch (Exception e) {
