@@ -23,4 +23,11 @@ public class TheaterRepository {
         });
     }
 
+    public List<Theater> findTheatersByExactName(String theaterName) {
+        return jpaApi.withTransaction(entityManager -> {
+            Query query = entityManager.createQuery("SELECT t FROM Theater t WHERE LOWER(t.name) = '" + theaterName.toLowerCase() + "'");
+            return query.getResultList();
+        });
+    }
+
 }
