@@ -67,15 +67,15 @@ public class Webhook extends Controller {
             } else {
                 if (theaters.size() > 1) {
                     List<Action> actions = theaters.stream().map(t -> new MessageAction(t.getName(), t.getName())).collect(Collectors.toList());
-                    ButtonsTemplate template = new ButtonsTemplate( null, "Ini Title","Ini Text?", actions);
-                    responseMessage = new TemplateMessage("More than one theaters found. Choose one.", template);
+                    ButtonsTemplate template = new ButtonsTemplate( null, "More than one theaters found. Choose one.", null, actions);
+                    responseMessage = new TemplateMessage("", template);
                 } else {
                     List<TheaterMovie> moviesInTheater = this.theaterMovieRepository.findMoviesScheduleInTheaterById(theaters.get(0).getId());
 
                     List<CarouselColumn> columns = new ArrayList<>();
 
                     for (TheaterMovie theaterMovie : moviesInTheater) {
-                        CarouselColumn column = new CarouselColumn(null, theaterMovie.getMovie().getTitle(), "Plays at: " + StringUtils.join(theaterMovie.getShowTimes(), ", "), null);
+                        CarouselColumn column = new CarouselColumn(null, theaterMovie.getMovie().getTitle(), "Plays at: " + StringUtils.join(theaterMovie.getShowTimes(), ", "), new ArrayList<>());
                         columns.add(column);
                     }
 
