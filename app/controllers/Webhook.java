@@ -12,6 +12,8 @@ import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
+import com.linecorp.bot.model.message.template.CarouselColumn;
+import com.linecorp.bot.model.message.template.CarouselTemplate;
 import com.linecorp.bot.model.message.template.ConfirmTemplate;
 import com.linecorp.bot.model.response.BotApiResponse;
 import models.Theater;
@@ -65,19 +67,21 @@ public class Webhook extends Controller {
             } else {
                 if (theaters.size() > 1) {
                     List<Action> actions = theaters.stream().map(t -> new MessageAction(t.getName(), t.getName())).collect(Collectors.toList());
-                    ConfirmTemplate template = new ConfirmTemplate( "More than one theaters found. Choose one.", actions);
-                    responseMessage = new TemplateMessage("alttext", template);
+                    ButtonsTemplate template = new ButtonsTemplate( null, "Ini Title","Ini Text?", actions);
+                    responseMessage = new TemplateMessage("More than one theaters found. Choose one.", template);
                 } else {
                     List<TheaterMovie> moviesInTheater = this.theaterMovieRepository.findMoviesScheduleInTheaterById(theaters.get(0).getId());
-                    StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.append("Showing movies schedule in " + theaters.get(0).getName() + "\n\n");
-                    for (int i = 0; i < moviesInTheater.size(); i++) {
-                        if (i > 0) stringBuilder.append("\n\n");
-                        stringBuilder.append(moviesInTheater.get(i).getMovie().getTitle() + "\n");
-                        stringBuilder.append("Plays at: " + StringUtils.join(moviesInTheater.get(i).getShowTimes(), ", "));
+
+                    List<CarouselColumn> columns = new ArrayList<>();
+
+                    for (TheaterMovie theaterMovie : moviesInTheater) {
+                        CarouselColumn column = new CarouselColumn(null, theaterMovie.getMovie().getTitle(), "Plays at: " + StringUtils.join(theaterMovie.getShowTimes(), ", "), null);
+                        columns.add(column);
                     }
 
-                    responseMessage = new TextMessage(stringBuilder.toString());
+                    CarouselTemplate carouselTemplate = new CarouselTemplate(columns);
+
+                    responseMessage = new TemplateMessage("Here are the movies in selected theater", carouselTemplate);
                 }
             }
 
