@@ -6,8 +6,12 @@ import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.LineMessagingClientImpl;
 import com.linecorp.bot.client.LineMessagingServiceBuilder;
 import com.linecorp.bot.model.ReplyMessage;
+import com.linecorp.bot.model.action.Action;
+import com.linecorp.bot.model.action.MessageAction;
 import com.linecorp.bot.model.message.Message;
+import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
+import com.linecorp.bot.model.message.template.ButtonsTemplate;
 import com.linecorp.bot.model.response.BotApiResponse;
 import models.Theater;
 import models.TheaterMovie;
@@ -19,8 +23,8 @@ import play.mvc.Result;
 import repositories.TheaterMovieRepository;
 import repositories.TheaterRepository;
 
+import java.util.ArrayList;
 import java.util.List;
-
 
 public class Webhook extends Controller {
 
@@ -57,11 +61,15 @@ public class Webhook extends Controller {
                 if (theaters.size() > 1) {
                     StringBuilder stringBuilder = new StringBuilder();
                     stringBuilder.append("Multiple theaters found. Choose one.\n");
+
+                    List<Action> actions = new ArrayList<>();
                     for (int i = 0; i < theaters.size(); i++) {
-                        if (i > 0) System.out.println("");
-                        stringBuilder.append(theaters.get(i).getName() + "\n");
+                        actions.add(new MessageAction(theaters.get(i).getName(), theaters.get(i).getName()));
                     }
-                    responseMessage = new TextMessage(stringBuilder.toString());
+
+                    ButtonsTemplate template = new ButtonsTemplate("http://www.21cineplex.com/data/gallery/pictures/148792288417018_300x430.jpg", "title", "Text", actions);
+
+                    responseMessage = new TemplateMessage("alttext", template);
                 } else {
                     List<TheaterMovie> moviesInTheater = this.theaterMovieRepository.findMoviesScheduleInTheaterById(theaters.get(0).getId());
                     StringBuilder stringBuilder = new StringBuilder();
