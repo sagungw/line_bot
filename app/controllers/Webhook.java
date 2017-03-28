@@ -12,6 +12,7 @@ import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
 import com.linecorp.bot.model.message.template.ButtonsTemplate;
+import com.linecorp.bot.model.message.template.ConfirmTemplate;
 import com.linecorp.bot.model.response.BotApiResponse;
 import models.Theater;
 import models.TheaterMovie;
@@ -67,9 +68,9 @@ public class Webhook extends Controller {
                         actions.add(new MessageAction(theaters.get(i).getName(), theaters.get(i).getName()));
                     }
 
-                    ButtonsTemplate template = new ButtonsTemplate("http://www.21cineplex.com/data/gallery/pictures/148792288417018_300x430.jpg", "title", "Text", actions);
+                    ConfirmTemplate template = new ConfirmTemplate( "Multiple theaters found. Choose one.", actions);
 
-                    responseMessage = new TemplateMessage(stringBuilder.toString(), template);
+                    responseMessage = new TemplateMessage("alttext", template);
                 } else {
                     List<TheaterMovie> moviesInTheater = this.theaterMovieRepository.findMoviesScheduleInTheaterById(theaters.get(0).getId());
                     StringBuilder stringBuilder = new StringBuilder();
