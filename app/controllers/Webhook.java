@@ -69,7 +69,7 @@ public class Webhook extends Controller {
 
                     ButtonsTemplate template = new ButtonsTemplate("http://www.21cineplex.com/data/gallery/pictures/148792288417018_300x430.jpg", "title", "Text", actions);
 
-                    responseMessage = new TemplateMessage("alttext", template);
+                    responseMessage = new TemplateMessage(stringBuilder.toString(), template);
                 } else {
                     List<TheaterMovie> moviesInTheater = this.theaterMovieRepository.findMoviesScheduleInTheaterById(theaters.get(0).getId());
                     StringBuilder stringBuilder = new StringBuilder();
