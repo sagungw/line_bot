@@ -79,6 +79,7 @@ public class Webhook extends Controller {
                         stringBuilder.append(moviesInTheater.get(i).getMovie().getTitle() + "\n");
                         stringBuilder.append("Plays at: " + StringUtils.join(moviesInTheater.get(i).getShowTimes(), ", "));
                     }
+
                     responseMessage = new TextMessage(stringBuilder.toString());
                 }
             }
