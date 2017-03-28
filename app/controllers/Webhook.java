@@ -1,6 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.linecorp.bot.client.LineMessagingClient;
 import com.linecorp.bot.client.LineMessagingClientImpl;
@@ -8,6 +9,7 @@ import com.linecorp.bot.client.LineMessagingServiceBuilder;
 import com.linecorp.bot.model.ReplyMessage;
 import com.linecorp.bot.model.action.Action;
 import com.linecorp.bot.model.action.MessageAction;
+import com.linecorp.bot.model.action.URIAction;
 import com.linecorp.bot.model.message.Message;
 import com.linecorp.bot.model.message.TemplateMessage;
 import com.linecorp.bot.model.message.TextMessage;
@@ -19,6 +21,7 @@ import com.linecorp.bot.model.response.BotApiResponse;
 import models.Theater;
 import models.TheaterMovie;
 import org.apache.commons.lang3.StringUtils;
+import play.Logger;
 import play.api.Configuration;
 import play.mvc.BodyParser;
 import play.mvc.Controller;
@@ -67,17 +70,26 @@ public class Webhook extends Controller {
             } else {
                 if (theaters.size() > 1) {
                     List<Action> actions = theaters.stream().map(t -> new MessageAction(t.getName(), t.getName())).collect(Collectors.toList());
-                    ButtonsTemplate template = new ButtonsTemplate( null, "More than one theaters found. Choose one.", null, actions);
-                    responseMessage = new TemplateMessage("", template);
+
+                    ButtonsTemplate template = new ButtonsTemplate( null, "Options", "More than one theaters found. Choose one.", actions);
+                    responseMessage = new TemplateMessage("alttext", template);
+
                 } else {
                     List<TheaterMovie> moviesInTheater = this.theaterMovieRepository.findMoviesScheduleInTheaterById(theaters.get(0).getId());
 
                     List<CarouselColumn> columns = new ArrayList<>();
 
-                    for (TheaterMovie theaterMovie : moviesInTheater) {
-                        CarouselColumn column = new CarouselColumn(null, theaterMovie.getMovie().getTitle(), "Plays at: " + StringUtils.join(theaterMovie.getShowTimes(), ", "), new ArrayList<>());
+                    for (int i = 0; i < 3; i++) {
+                        List<Action> actions = new ArrayList<>();
+                        actions.add(new URIAction("Lihat Detail", "https://21cineplex.com"));
+                        CarouselColumn column = new CarouselColumn(null, "Test Title", "Ini Desc", actions);
                         columns.add(column);
                     }
+//
+//                    for (TheaterMovie theaterMovie : moviesInTheater) {
+//                        CarouselColumn column = new CarouselColumn(null, "Test Title", "Ini Desc", null);
+//                        columns.add(column);
+//                    }
 
                     CarouselTemplate carouselTemplate = new CarouselTemplate(columns);
 
