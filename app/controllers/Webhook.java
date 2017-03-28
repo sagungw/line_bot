@@ -26,6 +26,7 @@ import repositories.TheaterRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Webhook extends Controller {
 
@@ -54,27 +55,22 @@ public class Webhook extends Controller {
 
             Message responseMessage;
 
-            List<Theater> theaters = theaterRepository.findTheatersByName(theaterName);
+            List<Theater> theaters = theaterRepository.findTheatersByExactName(theaterName);
+
+            if (theaters.isEmpty())
+                theaters = theaterRepository.findTheatersByName(theaterName);
 
             if (theaters.isEmpty()) {
                 responseMessage = new TextMessage("Sorry, I don't know where that theater is.");
             } else {
                 if (theaters.size() > 1) {
-                    StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.append("Multiple theaters found. Choose one.\n");
-
-                    List<Action> actions = new ArrayList<>();
-                    for (int i = 0; i < theaters.size(); i++) {
-                        actions.add(new MessageAction(theaters.get(i).getName(), theaters.get(i).getName()));
-                    }
-
-                    ConfirmTemplate template = new ConfirmTemplate( "Multiple theaters found. Choose one.", actions);
-
+                    List<Action> actions = theaters.stream().map(t -> new MessageAction(t.getName(), t.getName())).collect(Collectors.toList());
+                    ConfirmTemplate template = new ConfirmTemplate( "More than one theaters found. Choose one.", actions);
                     responseMessage = new TemplateMessage("alttext", template);
                 } else {
                     List<TheaterMovie> moviesInTheater = this.theaterMovieRepository.findMoviesScheduleInTheaterById(theaters.get(0).getId());
                     StringBuilder stringBuilder = new StringBuilder();
-                    stringBuilder.append("Here are movie schedule in " + theaterName + "\n");
+                    stringBuilder.append("Showing movies schedule in " + theaters.get(0).getName() + "\n\n");
                     for (int i = 0; i < moviesInTheater.size(); i++) {
                         if (i > 0) stringBuilder.append("\n\n");
                         stringBuilder.append(moviesInTheater.get(i).getMovie().getTitle() + "\n");
