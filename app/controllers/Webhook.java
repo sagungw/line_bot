@@ -60,7 +60,7 @@ public class Webhook extends Controller {
             String replyToken = event.get("replyToken").asText();
             String theaterName = event.get("message").get("text").asText();
 
-            Message responseMessage;
+            List<Message> responses = new ArrayList<>();
 
             List<Theater> theaters = theaterRepository.findTheatersByExactName(theaterName);
 
@@ -68,49 +68,59 @@ public class Webhook extends Controller {
                 theaters = theaterRepository.findTheatersByName(theaterName);
 
             if (theaters.isEmpty()) {
-                responseMessage = new TextMessage("Sorry, I don't know where that theater is.");
+                responses.add(new TextMessage("Maaf, aku tidak tahu theater yang kamu maksud. "));
             } else {
                 if (theaters.size() > 1) {
-                    List<Action> actions = theaters.stream().map(t -> {
+                    StringBuilder string = new StringBuilder("\n\n");
+
+                    List<Action> actions = new ArrayList<>();
+
+                    for (int i = 0; i < Math.min(theaters.size(), 4); i++) {
+                        int counter = i+1;
+
+                        Theater t = theaters.get(i);
+
+                        string.append(counter+ ". " + t.getName() + "\n");
+
                         String name = t.getName();
-                        if(name.length() > 20) {
-                           name = ellipsize(name, 20);
+                        if (name.length() >= 16) {
+                            name = ellipsize(name, 16);
                         }
 
-                        MessageAction messageAction = new MessageAction(name, t.getName());
+                        MessageAction messageAction = new MessageAction(counter + ". "+name, t.getName());
+                        actions.add(messageAction);
+                    }
 
-                        return messageAction;
-                    }).collect(Collectors.toList());
+                    responses.add(new TextMessage("Aku menemukan beberapa theater"+string.toString()));
 
-                    ButtonsTemplate template = new ButtonsTemplate( null, "Options", "More than one theaters found. Choose one.", actions);
-                    responseMessage = new TemplateMessage("alttext", template);
+                    ButtonsTemplate template = new ButtonsTemplate(null, "Options", "Silahkan pilih salah satu", actions);
+                    responses.add(new TemplateMessage("alttext", template));
 
                 } else {
                     List<TheaterMovie> moviesInTheater = this.theaterMovieRepository.findMoviesScheduleInTheaterById(theaters.get(0).getId());
 
-                    List<CarouselColumn> columns = new ArrayList<>();
+                    if (moviesInTheater.size() > 0) {
+                        List<CarouselColumn> columns = new ArrayList<>();
 
-                    for (int i = 0; i < 3; i++) {
-                        List<Action> actions = new ArrayList<>();
-                        actions.add(new URIAction("Lihat Detail", "https://21cineplex.com"));
-                        CarouselColumn column = new CarouselColumn(null, "Test Title", "Ini Desc", actions);
-                        columns.add(column);
+                        for (TheaterMovie theaterMovie : moviesInTheater) {
+                            List<Action> actions = new ArrayList<>();
+                            actions.add(new URIAction("Lihat Detail", "https://google.com"));
+                            CarouselColumn column = new CarouselColumn(null, theaterMovie.getMovie().getTitle(), "Plays at : " + StringUtils.join(theaterMovie.getShowTimes(), ","), actions);
+                            columns.add(column);
+                        }
+
+                        CarouselTemplate carouselTemplate = new CarouselTemplate(columns);
+
+                        responses.add(new TemplateMessage("Berikut film2 yang lagi tayang", carouselTemplate));
+                    } else {
+                        responses.add(new TextMessage("Maaf saat ini tidak ada film yang tersedia."));
                     }
-//
-//                    for (TheaterMovie theaterMovie : moviesInTheater) {
-//                        CarouselColumn column = new CarouselColumn(null, "Test Title", "Ini Desc", null);
-//                        columns.add(column);
-//                    }
-
-                    CarouselTemplate carouselTemplate = new CarouselTemplate(columns);
-
-                    responseMessage = new TemplateMessage("Here are the movies in selected theater", carouselTemplate);
                 }
             }
 
             try {
                 LineMessagingClient client = new LineMessagingClientImpl(LineMessagingServiceBuilder.create(this.lineChannelToken).build());
-                BotApiResponse response = client.replyMessage(new ReplyMessage(replyToken, responseMessage)).get();
+                BotApiResponse response = client.replyMessage(new ReplyMessage(replyToken, responses)).get();
 
                 return ok(response.getMessage());
             } catch (Exception e) {
@@ -132,7 +142,7 @@ public class Webhook extends Controller {
 
         // Just one long word. Chop it off.
         if (end == -1)
-            return text.substring(0, max-3) + "...";
+            return text.substring(0, max - 3) + "...";
 
         // Step forward as long as textWidth allows.
         int newEnd = end;
