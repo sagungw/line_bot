@@ -29,6 +29,11 @@ public class Movie {
     @Getter
     private String synopsis;
 
+    @Column
+    @Setter
+    @Getter
+    private String movieUrl;
+
     @Column(name = "image_url")
     @Setter
     @Getter
@@ -46,9 +51,15 @@ public class Movie {
         this.title = title;
     }
 
-    public Movie(String title, String synopsis) {
+    public Movie(String title, String movieUrl) {
         this(title);
-        this.synopsis = synopsis;
+        this.movieUrl = movieUrl;
+    }
+
+    public Movie(String title, String imageUrl, String movieUrl) {
+        this(title);
+        this.imageUrl = imageUrl;
+        this.movieUrl = movieUrl;
     }
 
 }

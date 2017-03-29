@@ -46,8 +46,12 @@ public class Theater {
     @Getter
     private String url;
 
-    @OneToMany(mappedBy = "primaryKeys.theater")
-    @Cascade(CascadeType.ALL)
+    @Column
+    @Setter
+    @Getter
+    private Integer cityValue;
+
+    @OneToMany(mappedBy = "primaryKeys.theater", cascade = javax.persistence.CascadeType.ALL)
     @Setter
     @Getter
     private List<TheaterMovie> theaterMovies;
@@ -59,9 +63,10 @@ public class Theater {
         this.setNameWithChain(name);
     }
 
-    public Theater(String name, String url) {
+    public Theater(String name, String url, Integer cityValue) {
         this(name);
         this.url = url;
+        this.cityValue = cityValue;
     }
 
     public void setNameWithChain(String name) {

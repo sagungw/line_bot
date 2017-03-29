@@ -9,10 +9,11 @@
   "theaters_entry_css_selectors": [
     "li.mn4 > a"
   ],
-  "theater_css_selector": "table.table-theater tr[data-city] a",
-  "theater_name_css_selector": "div.col-m_462 div.col-title h2",
+  "theater_css_selector": "table.table-theater tr[data-city]",
+  "theater_name_css_selector": "table.table-theater tr[data-city] a",
   "movie_row_css_selector": "//div[@id='makan'][1]//tr[not(@class='title')]",
   "movie_link_css_selector": "//div[@id='makan'][1]//tr[not(@class='title')]/td/a[2]",
+  "movie_image_css_selector": "//div[@id='makan'][1]//tr[not(@class='title')]/td/a[1]/img",
   "movie_show_time_css_selector": "//div[@id='makan'][1]//tr[not(@class='title')]/td[2]",
   "movie_name_css_selector": "h2.titlebig",
   "movie_synopsis_css_selector": "div.col-m_392 div.grad div.col-content"

@@ -30,7 +30,7 @@ public class MoviesScrapper extends XXICineplexScrapper {
 
         theaters.forEach(theater -> {
             List<TheaterMovie> theaterMovies = jpaApi.withTransaction(entityManager -> {
-                Query query = entityManager.createQuery("SELECT tm FROM theater_movie tm JOIN FETCH tm.showTimes WHERE tm.primaryKeys.theater.id = " + theater.getId() + " AND tm.isNowPlaying = true");
+                Query query = entityManager.createQuery("SELECT tm FROM theater_movie tm LEFT JOIN FETCH tm.showTimes WHERE tm.primaryKeys.theater.id = " + theater.getId() + " AND tm.isNowPlaying = true");
                 return query.getResultList();
             });
 
@@ -42,12 +42,17 @@ public class MoviesScrapper extends XXICineplexScrapper {
             });
 
             webDriver.navigate().to(theater.getUrl());
-            List<String> movieLinks = webDriver.smartFindElements(site.getMovieLinkCssSelector()).stream().map(WebElement::getText).collect(Collectors.toList());
+
+            List<WebElement> movieLinks = webDriver.smartFindElements(site.getMovieLinkCssSelector());
+            List<String> imageUrls = webDriver.smartFindElements(site.getMovieImageCssSelector()).stream().map(el -> el.getAttribute("src")).collect(Collectors.toList());
             List<String> showTimeStrings = webDriver.smartFindElements(site.getMovieShowTimeCssSelector()).stream().map(WebElement::getText).collect(Collectors.toList());
 
             for (int i = 0; i < movieLinks.size(); i++) {
 
-                String rawTitle = movieLinks.get(i);
+                WebElement link = movieLinks.get(i);
+                String rawTitle = link.getText();
+                String href = link.getAttribute("href");
+                String imageHref = this.getBiggerImageUrl(imageUrls.get(i));
                 String title = this.normalizeTitle(rawTitle);
 
                 List<TheaterMovie> existingTheaterMovies =  jpaApi.withTransaction(entityManager -> {
@@ -68,7 +73,7 @@ public class MoviesScrapper extends XXICineplexScrapper {
                     });
 
                     if (existingMovies.isEmpty()) {
-                        Movie movie = new Movie(title);
+                        Movie movie = new Movie(title, imageHref, href);
 
                         TheaterMovie theaterMovie = new TheaterMovie(rawTitle, movie, theater, showTimes);
                         theaterMovie.setNowPlaying(true);
@@ -84,6 +89,16 @@ public class MoviesScrapper extends XXICineplexScrapper {
                         theaterMovie.setNowPlaying(true);
 
                         jpaApi.withTransaction(() -> jpaApi.em().persist(theaterMovie));
+
+                        if(movie.getMovieUrl() == null) {
+                            movie.setMovieUrl(href);
+                            jpaApi.withTransaction(() -> jpaApi.em().merge(movie));
+                        }
+
+                        if(movie.getImageUrl() == null) {
+                            movie.setImageUrl(imageHref);
+                            jpaApi.withTransaction(() -> jpaApi.em().merge(movie));
+                        }
 
                         Logger.info("fetched " + theaterMovie.getTheater().getName() + ": " + theaterMovie.getMovie().getTitle());
                     }
@@ -110,6 +125,10 @@ public class MoviesScrapper extends XXICineplexScrapper {
             rawTitle = rawTitle.replace(" (3D)", "");
         }
         return rawTitle;
+    }
+
+    private String getBiggerImageUrl(String originalImageUrl) {
+        return originalImageUrl.replace("50x60", "300x430");
     }
 
 }

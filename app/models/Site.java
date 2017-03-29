@@ -71,6 +71,11 @@ public class Site {
     @Getter
     private String movieSynopsisCssSelector;
 
+    @JsonProperty("movie_image_css_selector")
+    @Setter
+    @Getter
+    private String movieImageCssSelector;
+
     @JsonProperty("movies_scrapping_frequency_in_days")
     @Setter
     @Getter

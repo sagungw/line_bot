@@ -12,13 +12,11 @@ import java.io.Serializable;
 public class TheaterMovieId implements Serializable {
 
     @ManyToOne(targetEntity = Theater.class)
-    @Cascade(org.hibernate.annotations.CascadeType.SAVE_UPDATE)
     @Setter
     @Getter
     private Theater theater;
 
     @ManyToOne(targetEntity = Movie.class)
-    @Cascade(org.hibernate.annotations.CascadeType.SAVE_UPDATE)
     @Setter
     @Getter
     private Movie movie;

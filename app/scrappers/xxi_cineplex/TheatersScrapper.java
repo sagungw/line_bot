@@ -25,7 +25,8 @@ public class TheatersScrapper extends XXICineplexScrapper {
         webDriver.navigate().to(site.getUrl());
         site.getTheatersEntryCssSelectors().forEach(selector -> webDriver.findElement(By.cssSelector(selector)).click());
 
-        List<WebElement> theaterLinks = webDriver.findElements(By.cssSelector(site.getTheaterCssSelector()));
+        List<WebElement> theaterRows = webDriver.findElements(By.cssSelector(site.getTheaterCssSelector()));
+        List<WebElement> theaterLinks = webDriver.findElements(By.cssSelector(site.getTheaterNameCssSelector()));
 
         for (int i = 0; i < theaterLinks.size(); i++) {
             WebElement theaterLink = theaterLinks.get(i);
@@ -34,6 +35,7 @@ public class TheatersScrapper extends XXICineplexScrapper {
             webDriver.executeScript("arguments[0].parentNode.removeChild(arguments[0])", span);
 
             String theaterName = theaterLink.getAttribute("textContent");
+            Integer cityValue = Integer.parseInt(theaterRows.get(i).getAttribute("data-city"));
 
             List<Theater> existingTheaters = jpaApi.withTransaction(entityManager -> {
                 Query query = entityManager.createQuery("SELECT t FROM Theater t WHERE t.name = '" + theaterName + "'");
@@ -41,7 +43,7 @@ public class TheatersScrapper extends XXICineplexScrapper {
             });
 
             if (existingTheaters.isEmpty()) {
-                Theater theater = new Theater(theaterName, theaterLink.getAttribute("href"));
+                Theater theater = new Theater(theaterName, theaterLink.getAttribute("href"), cityValue);
 
                 jpaApi.withTransaction(() -> jpaApi.em().persist(theater));
                 Logger.info("fetched " + theaterName);
