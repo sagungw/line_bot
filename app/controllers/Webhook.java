@@ -104,14 +104,14 @@ public class Webhook extends Controller {
 
                         for (TheaterMovie theaterMovie : moviesInTheater) {
                             List<Action> actions = new ArrayList<>();
-                            actions.add(new URIAction("Lihat Detail", "https://google.com"));
+                            actions.add(new URIAction("Lihat Detail", theaterMovie.getMovie().getMovieUrl()));
 
                             String text = "Plays at : " + StringUtils.join(theaterMovie.getShowTimes(), ", ");
                             if(text.length() > 60) {
                                 text = text.substring(0, 60);
                             }
 
-                            CarouselColumn column = new CarouselColumn(null, theaterMovie.getMovie().getTitle(), text, actions);
+                            CarouselColumn column = new CarouselColumn(theaterMovie.getMovie().getImageUrl(), theaterMovie.getMovie().getTitle(), text, actions);
                             columns.add(column);
                         }
 
