@@ -76,22 +76,22 @@ public class Webhook extends Controller {
                     List<Action> actions = new ArrayList<>();
 
                     for (int i = 0; i < Math.min(theaters.size(), 4); i++) {
-                        int counter = i+1;
+                        int counter = i + 1;
 
                         Theater t = theaters.get(i);
 
-                        string.append(counter+ ". " + t.getName() + "\n");
+                        string.append(counter + ". " + t.getName() + "\n");
 
                         String name = t.getName();
                         if (name.length() >= 16) {
                             name = ellipsize(name, 16);
                         }
 
-                        MessageAction messageAction = new MessageAction(counter + ". "+name, t.getName());
+                        MessageAction messageAction = new MessageAction(counter + ". " + name, t.getName());
                         actions.add(messageAction);
                     }
 
-                    responses.add(new TextMessage("Aku menemukan beberapa theater"+string.toString()));
+                    responses.add(new TextMessage("Aku menemukan beberapa theater" + string.toString()));
 
                     ButtonsTemplate template = new ButtonsTemplate(null, "Options", "Silahkan pilih salah satu", actions);
                     responses.add(new TemplateMessage("alttext", template));
@@ -100,24 +100,30 @@ public class Webhook extends Controller {
                     List<TheaterMovie> moviesInTheater = this.theaterMovieRepository.findMoviesScheduleInTheaterById(theaters.get(0).getId());
 
                     if (moviesInTheater.size() > 0) {
-                        List<CarouselColumn> columns = new ArrayList<>();
 
-                        for (TheaterMovie theaterMovie : moviesInTheater) {
-                            List<Action> actions = new ArrayList<>();
-                            actions.add(new URIAction("Lihat Detail", theaterMovie.getMovie().getMovieUrl()));
+                        responses.add(new TextMessage("Berikut film2 yang lagi tayang"));
 
-                            String text = "Plays at : " + StringUtils.join(theaterMovie.getShowTimes(), ", ");
-                            if(text.length() > 60) {
-                                text = text.substring(0, 60);
+                        for (int i = 0; i < Math.max(1, Math.ceil((float) moviesInTheater.size() / 5)); i++) {
+                            List<CarouselColumn> columns = new ArrayList<>();
+
+                            for (int j = i * 5; j < Math.min(moviesInTheater.size(), (i+1) * 5); j++) {
+                                TheaterMovie theaterMovie = moviesInTheater.get(j);
+
+                                List<Action> actions = new ArrayList<>();
+                                actions.add(new URIAction("Lihat Detail", theaterMovie.getMovie().getMovieUrl()));
+
+                                String text = "Plays at : " + StringUtils.join(theaterMovie.getShowTimes(), ", ");
+                                if (text.length() > 60) {
+                                    text = text.substring(0, 60);
+                                }
+
+                                CarouselColumn column = new CarouselColumn(null, theaterMovie.getMovie().getTitle(), text, actions);
+                                columns.add(column);
                             }
 
-                            CarouselColumn column = new CarouselColumn(theaterMovie.getMovie().getImageUrl(), theaterMovie.getMovie().getTitle(), text, actions);
-                            columns.add(column);
+                            responses.add(new TemplateMessage("List Film " + (i + 1), new CarouselTemplate(columns)));
                         }
 
-                        CarouselTemplate carouselTemplate = new CarouselTemplate(columns);
-
-                        responses.add(new TemplateMessage("Berikut film2 yang lagi tayang", carouselTemplate));
                     } else {
                         responses.add(new TextMessage("Maaf saat ini tidak ada film yang tersedia."));
                     }
